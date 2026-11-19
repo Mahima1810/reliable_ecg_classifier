@@ -1,0 +1,58 @@
+# AAMI EC57 beat-class map for MIT-BIH style symbols.
+#
+# Classes: N (normal and bundle-branch/escape), S (supraventricular), V (ventricular), F (fusion), Q (unclassifiable or paced).
+# Q is NEVER mapped to N. Q beats are excluded from training and scoring and counted separately.
+#
+# Non-beat annotation symbols are listed explicitly; they are not beats and are excluded from beat tables.
+# Any symbol that is neither a mapped beat nor a listed non-beat symbol is an error (see ecgrc.labels).
+#
+# Provisional symbols are beat symbols that are not part of standard AAMI EC57. They raise an error unless
+# `allow_provisional: true` is set in the experiment config, and every use is then logged with its record and sample.
+
+standard:
+  N: N
+  L: N
+  R: N
+  e: N
+  j: N
+  A: S
+  a: S
+  J: S
+  S: S
+  V: V
+  E: V
+  F: F
+  Q: Q
+  "/": Q
+  f: Q
+  "?": Q
+
+provisional:
+  # Present in the V2 label map (label_map_v1); not in AAMI EC57. Decide before use.
+  B: N      # V2 maps bundle-branch-block beat to N
+  n: N      # V2 maps 'n' to N
+  r: V      # V2 maps R-on-T (r) to V
+
+non_beat:
+  - "!"   # ventricular flutter wave
+  - '"'   # comment
+  - "'"   # J point
+  - "("   # waveform onset
+  - ")"   # waveform end
+  - "*"   # systole
+  - "+"   # rhythm change
+  - "="   # measurement
+  - "@"   # link
+  - D     # diastole
+  - T     # T-wave change
+  - "["   # VF episode start
+  - "]"   # VF episode end
+  - "^"   # non-captured pacemaker
+  - "`"   # PQ junction
+  - p     # P-wave peak
+  - s     # ST change
+  - t     # T-wave peak
+  - u     # U-wave peak
+  - x     # non-conducted P wave
+  - "|"   # isolated QRS-like artefact
+  - "~"   # signal quality change

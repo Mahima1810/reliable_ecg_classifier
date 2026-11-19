@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# TEMPLATE. Not verified for Turing. Submission is refused until turing/env.sh is complete and TURING_VERIFIED=1.
+# The directives below are SLURM-style placeholders; rewrite them for the scheduler docs/TURING_SETUP.md confirms.
+#
+#SBATCH --job-name=ecg_recall_train
+#SBATCH --partition=__SET_IN_ENV__
+#SBATCH --account=__SET_IN_ENV__
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=__SET_WALLTIME__
+#SBATCH --output=%x_%j.out
+#
+# Usage (after setup): RUN_NAME=run01 SEED=101 sbatch turing/train.sbatch.template
+set -euo pipefail
+
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+# shellcheck disable=SC1091
+. "$REPO_DIR/turing/env.sh"
+: "${TURING_VERIFIED:?not verified: see docs/TURING_SETUP.md}"
+: "${RUN_NAME:?set RUN_NAME}"
+: "${SEED:?set SEED (the approved seed list is in configs/experiment_recall_primary.yaml)}"
+: "${ECG_DATA_ROOT:?set in env.sh}"
+: "${ECG_RUN_ROOT:?set in env.sh}"
+
+# shellcheck disable=SC1091
+. "$ECG_VENV/bin/activate"
+cd "$REPO_DIR"
+git rev-parse --short HEAD > "$ECG_RUN_ROOT/$RUN_NAME.commit" 2>/dev/null || true
+python -c "import torch; assert torch.cuda.is_available(), 'CUDA not available; refusing CPU fallback'"
+python scripts/validate_data.py --config configs/experiment_recall_primary.yaml
+python scripts/train.py --config configs/experiment_recall_primary.yaml --run-name "$RUN_NAME" --seed "$SEED" --resume

@@ -1,0 +1,55 @@
+# Data, caches, outputs: never commit
+data/
+external_data/
+caches/
+cache/
+runs/
+checkpoints/
+logs/
+results/
+*.pt
+*.pth
+*.ckpt
+*.npz
+*.npy
+*.h5
+*.tar
+*.tar.gz
+*.zip
+*.parquet
+*.csv.gz
+*.dat
+*.hea
+*.atr
+*.log
+
+# Restricted sources (MIMIC is credentialed or restricted; never in Git)
+mimic*/
+*mimic*
+
+# Secrets and local settings
+.env
+.env.*
+turing/env.sh
+*.pem
+*.key
+.netrc
+.git-credentials
+secrets/
+local_paths.yaml
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store

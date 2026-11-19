@@ -1,0 +1,44 @@
+# Recall-primary CNN-GRU experiment. Separate from STABILITY2 (its pre-registration is untouched).
+#
+# NULL VALUES ARE DELIBERATE. They must be set by the project owner (and a clinician for the recall floors)
+# before any run that selects thresholds or reports a test result. The code refuses to run while they are null.
+
+experiment:
+  name: recall_primary_cnn_gru_v1
+  primary_metrics: [S_recall, V_recall]
+  datasets: [mitdb, svdb, incartdb, edb]
+  holdout_dataset: null            # set to one dataset name for leave-one-dataset-out
+  allow_provisional_labels: false  # B, n, r are not AAMI EC57; enable only after a documented decision
+  seeds: null                      # e.g. a list, once approved
+
+splits:
+  fractions: [0.6, 0.2, 0.2]       # train, val, test (patient-level, stratified by dataset)
+  split_seed: null                 # set explicitly; must be recorded with the run
+
+model:
+  kind: cnn_gru
+  window: 100                      # samples at processing_fs (1.0 s)
+  sequence_length: 16              # causal beat context
+  emb: 64
+  hidden: 64
+  n_layers: 2
+  dropout: 0.1
+
+training:
+  epochs: 40
+  batch_size: 256
+  lr: 0.002
+  weight_decay: 0.01
+  patience: 8                      # early stop on validation selection statistic
+  class_weight_cap: 10.0
+  max_grad_norm: 5.0
+  selection_statistic: mean_AP_S_V # validation average precision for S and V; threshold-free, validation only
+
+threshold_selection:
+  # Clinical decisions. Null = refuse to select a threshold.
+  S_recall_floor: null
+  V_recall_floor: null
+  fp_per_hour_budget: null
+  bootstrap:
+    B: 2000
+    alpha: 0.05

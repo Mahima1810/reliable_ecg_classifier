@@ -1,0 +1,52 @@
+# Beat-labelled research datasets. Paths are NOT stored here: each root comes from an environment variable
+# (ECG_DATA_ROOT) so that the same config works on any machine. See docs/DATASETS.md.
+#
+# native_fs: sampling rate in the record header (verified per record at load time; mismatch is an error).
+# lead_preference: first available lead name in the record header is used; the chosen lead is stored with every beat.
+# patient_map: configs/patient_map.csv (dataset, record, patient_id, evidence). Missing entries are an error.
+
+datasets:
+  mitdb:
+    description: MIT-BIH Arrhythmia Database
+    subdir: mitdb
+    native_fs: 360
+    lead_preference: [MLII, II, V5, V1]
+    licence: ODC-By 1.0 (PhysioNet)
+    status: beat-labelled, used in V2 tests (exploratory)
+    # Excluded with reasons carried from the V2 pipeline (datasets.py): paced records, and 202 which is the
+    # same patient as 201 (leakage). The loader logs each exclusion.
+    excluded_records:
+      "102": paced
+      "104": paced
+      "107": paced
+      "217": paced
+      "202": same patient as 201
+  svdb:
+    description: MIT-BIH Supraventricular Arrhythmia Database
+    subdir: svdb
+    native_fs: 128
+    lead_preference: [ECG1, MLII, II]
+    licence: ODC-By 1.0 (PhysioNet/AWS)
+    status: beat-labelled, identity partly assumed, overlaps AFDB (15 records)
+  incartdb:
+    description: St Petersburg INCART 12-lead Arrhythmia Database
+    subdir: incartdb
+    native_fs: 257
+    lead_preference: [II, MLII, V5]
+    licence: ODC-By 1.0 (PhysioNet/AWS)
+    status: beat-labelled, 75 recordings from 32 patients (header-based)
+  edb:
+    description: European ST-T Database
+    subdir: edb
+    native_fs: 250
+    lead_preference: [MLIII, MLII, V5, V4, V2, V1, MLI]
+    licence: ODC-By 1.0 (PhysioNet listing; per-file page not checked)
+    status: beat-labelled, patient overlap with other datasets NOT resolved
+
+# Resampling target for every model input. Anti-aliased polyphase resampling (scipy.signal.resample_poly).
+# Note: the V2 pipeline used linear interpolation; this repository does not reuse that step.
+processing_fs: 100
+
+# Beat window (samples at processing_fs) around each R-peak.
+beat_pre: 40
+beat_post: 60

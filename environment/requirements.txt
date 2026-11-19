@@ -1,0 +1,13 @@
+# Versions used by the development environment on which the tests were run (2026-11-19).
+# Turing has NOT been verified: check GPU architecture and CUDA driver before installing a torch build.
+#
+# torch 2.5.1 was built for CUDA 12.1. Install it from the PyTorch index that matches the target system, e.g.
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+# Use the CPU or other index on machines without a matching CUDA driver. Do not use bf16 on Turing (sm_75) GPUs.
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.15.3
+wfdb==4.3.1
+PyYAML==6.0.3
+scikit-learn==1.7.2
+pytest==9.2.0
