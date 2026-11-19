@@ -1,5 +1,7 @@
 # Datasets
 
+How to download and verify them, step by step: `docs/DOWNLOAD.md` (`scripts/download_datasets.sh`).
+
 Beat-labelled research datasets used by this repository. Counts are from the local audit on 2026-11-17 to 2026-11-19 and
 should be re-checked by `scripts/validate_data.py` on each machine. Licences were checked from PhysioNet or AWS listings,
 not from each file's licence text.

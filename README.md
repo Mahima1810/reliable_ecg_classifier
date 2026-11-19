@@ -39,7 +39,10 @@ python3.10 -m venv .venv && . .venv/bin/activate
 pip install -r environment/requirements.txt       # see the torch note inside the file
 export ECG_DATA_ROOT=/path/to/data                 # dirs: mitdb, svdb, incartdb, edb (see docs/DATASETS.md)
 export ECG_RUN_ROOT=/path/to/runs                  # writable, persistent
+bash scripts/download_datasets.sh                  # downloads and checksum-verifies all four (about 1.5 GB)
 ```
+
+The full, step-by-step download instructions (no assistant needed, no credentials) are in `docs/DOWNLOAD.md`.
 
 ## Commands
 Tests (CPU, no data needed):
