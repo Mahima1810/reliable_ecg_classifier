@@ -32,6 +32,7 @@ training:
   patience: 8                      # early stop on validation selection statistic
   class_weight_cap: 10.0
   max_grad_norm: 5.0
+  mixed_precision: fp16            # required on Turing-class GPUs (sm_75); "none" for CPU or debugging
   selection_statistic: mean_AP_S_V # validation average precision for S and V; threshold-free, validation only
 
 threshold_selection:

@@ -120,7 +120,9 @@ def main() -> int:
     stale = 0
     for ep in range(start_epoch, max_epochs):
         t0 = time.time()
-        loss = train_epoch(model, opt, x, rr, m, y, tr["batch_size"], weights.to(device), device, rng)
+        loss = train_epoch(model, opt, x, rr, m, y, tr["batch_size"], weights.to(device), device, rng,
+                           amp=(tr.get("mixed_precision", "none") == "fp16"),
+                           max_grad_norm=float(tr.get("max_grad_norm", 5.0)))
         pv, yv = predict_probs(model, data["val"][0], data["val"][1], data["val"][2], data["val"][3], tr["batch_size"], device)
         ap_s = float(average_precision_score((yv == class_index["S"]).astype(int), pv[:, class_index["S"]]))
         ap_v = float(average_precision_score((yv == class_index["V"]).astype(int), pv[:, class_index["V"]]))

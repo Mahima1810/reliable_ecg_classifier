@@ -46,15 +46,23 @@ def scored_only(beats: pd.DataFrame) -> pd.DataFrame:
 
 
 def class_weights(y: np.ndarray, n_classes: int = len(CLASSES), cap: float = 10.0) -> torch.Tensor:
-    counts = np.bincount(y, minlength=n_classes).astype(float)
+    """Inverse-frequency weights over scored labels only (labels < 0 are unscored and ignored), capped."""
+    y = np.asarray(y)
+    counts = np.bincount(y[y >= 0].astype(np.int64), minlength=n_classes).astype(float)
     w = np.where(counts > 0, counts.sum() / (n_classes * np.maximum(counts, 1)), 0.0)
     w = np.minimum(w / w[w > 0].mean(), cap)
     return torch.tensor(w, dtype=torch.float32)
 
 
 def train_epoch(model, opt, x, rr, mask, y, batch_size: int, weights: torch.Tensor, device, rng: np.random.Generator,
-                max_steps: int | None = None) -> float:
+                max_steps: int | None = None, amp: bool = False, max_grad_norm: float = 5.0) -> float:
+    """One pass over the training sequences. amp=True uses fp16 autocast with loss scaling (CUDA only).
+
+    fp16 is the required mixed-precision mode on Turing-class GPUs (sm_75): bf16 is slow there.
+    """
     model.train()
+    use_amp = bool(amp) and device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
     idx = rng.permutation(len(x))
     total, n = 0.0, 0
     steps = 0
@@ -64,16 +72,19 @@ def train_epoch(model, opt, x, rr, mask, y, batch_size: int, weights: torch.Tens
         rb = torch.as_tensor(rr[b], device=device)
         mb = torch.as_tensor(mask[b], device=device)
         yb = torch.as_tensor(y[b], device=device)
-        logits = model(xb, rb, mb)[:, -1, :]            # newest beat only, matching evaluation
         target = yb[:, -1]
         valid = target >= 0
         if int(valid.sum()) == 0:
             continue
-        loss = F.cross_entropy(logits[valid], target[valid], weight=weights.to(device))
+        with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=use_amp):
+            logits = model(xb, rb, mb)[:, -1, :]        # newest beat only, matching evaluation
+            loss = F.cross_entropy(logits[valid].float(), target[valid], weight=weights.to(device))
         opt.zero_grad(set_to_none=True)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
-        opt.step()
+        scaler.scale(loss).backward()
+        scaler.unscale_(opt)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+        scaler.step(opt)
+        scaler.update()
         total += float(loss) * int(valid.sum())
         n += int(valid.sum())
         steps += 1
